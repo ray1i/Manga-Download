@@ -1,10 +1,10 @@
 #! python3
-# downloadPixiv.py - Downloads from pixiv
+# downloadPixiv.py - Downloads manga from pixiv
 
 import requests, os, bs4, re
-
-master_url = 'https://www.pixiv.net/user/721004/series/32271'       # url of chaper list
-os.makedirs('pixiv_downloads', exist_ok=True)              # store comics in ./pixiv_downloads
+     
+master_url = input('Enter the URL of the chapter list:  ')  # Url of chapter list
+os.makedirs('pixiv_downloads', exist_ok=True)              # Store comics in ./pixiv_downloads
 chapter_base = 'https://www.pixiv.net/en/artworks/'
 page_base = 'https://tc-pximg01.techorus-cdn.com/img-original/img/'
 
@@ -56,8 +56,3 @@ for chapter_id in master_ids:
         page_number += 1
 
 print('Done.')
-
-# original":"https://tc-pximg01.techorus-cdn.com/img-original/img/2018/05/28/00/16/58/68957815_p0.png"}
-# original":"https://i-f.pximg.net/img-original/img/2018/10/04/23/23/18/71020715_p0.png
-# original":"https://i.pximg.net/img-original/img/2018/10/04/23/23/18/71020715_p0.png"
-# original":"https://i-cf.pximg.net/img-original/img/2018/06/12/19/58/20/69199373_p0.png
