@@ -7,5 +7,4 @@ Download manga from pixiv.net
 3. Done.
 
 # To-Do:
-- add support for other file types (currently only supports .png)
 - add support for manga with >1 pages of chapters
