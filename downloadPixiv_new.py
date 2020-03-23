@@ -2,7 +2,7 @@
 # downloadPixiv.py - Downloads manga from pixiv
 
 import requests, os, bs4, re
-     
+
 master_url = input('Enter the URL of the chapter list:  ')  # Url of chapter list
 chapter_base = 'https://www.pixiv.net/en/artworks/'
 page_base = 'https://tc-pximg01.techorus-cdn.com/img-original/img/'
@@ -17,11 +17,35 @@ master_res = master_res.text
 findTitleRegex = re.compile(r'<title>「(\w*)」/')
 title = findTitleRegex.search(master_res)
 title = title.group(1)
-os.makedirs(os.path.join("pixiv_downloads", title), exist_ok=True)   # Store comics in ./pixiv_downloads/(title)
+
+# Store comics in ./pixiv_downloads/(title)
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.makedirs(os.path.join("pixiv_downloads", title), exist_ok=True)
 
 # Search master list for all the chapters, put their ids into a list.
 findChaptersRegex = re.compile(r'image-item"><a href="/artworks/(\d{8})')
 master_ids = findChaptersRegex.findall(master_res)
+
+master_page_number = 2
+while True:
+
+    new_master_url = master_url + '?p=' + str(master_page_number)
+
+    # Load the master list.
+    new_master_res = requests.get(new_master_url)
+    new_master_res.raise_for_status()
+    new_master_res = new_master_res.text
+    if '<div class="no-content">' in new_master_res:
+        break
+    print(f'Loading page {new_master_url} ...')
+
+    # Search master list for all the chapters, put their ids into a list.
+    temp_ids = findChaptersRegex.findall(new_master_res)
+    for id in temp_ids:
+        master_ids.append(id)
+    
+    # Go to the next page of pages
+    master_page_number += 1
 
 for chapter_id in master_ids:
 
@@ -53,7 +77,7 @@ for chapter_id in master_ids:
             # Download the image.
             res = requests.get(page_url)
             res.raise_for_status()
-            print(f'Downloading image {page_url}')
+            #print(f'Downloading image {page_url}')
         except requests.exceptions.HTTPError:
             break
 
