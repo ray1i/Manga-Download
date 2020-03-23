@@ -7,4 +7,5 @@ Download manga from pixiv.net
 3. Done.
 
 # To-Do:
-- add support for manga with >1 pages of chapters
+- check input to make sure it's in the right format
+- put different chapters into different folders
