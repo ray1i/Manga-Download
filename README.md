@@ -7,5 +7,5 @@ Download manga from pixiv.net
 3. Done.
 
 # To-Do:
+- pixiv changed the system to only allow image access if it's from the actual chapter, so you can't access individual images from url anymore, which this script does. find a way around this.
 - check input to make sure it's in the right format
-- put different chapters into different folders
