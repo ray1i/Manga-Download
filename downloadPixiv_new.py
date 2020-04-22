@@ -1,11 +1,12 @@
 # !python3
-# downloadPixiv.py - Downloads manga from pixiv
+# downloadPixiv_new.py - Downloads manga from pixiv
 
 import requests, os, bs4, re
 
 master_url = input('Enter the URL of the chapter list:  ')  # Url of chapter list
 chapter_base = 'https://www.pixiv.net/en/artworks/'
-page_base = 'https://tc-pximg01.techorus-cdn.com/img-original/img/'
+#page_base = 'https://tc-pximg01.techorus-cdn.com/img-original/img/'
+page_base = 'https://i.pximg.net/img-original/img/'
 
 # Load the master list.
 print(f'Loading page {master_url} ...') 
@@ -14,8 +15,7 @@ master_res.raise_for_status()
 master_res = master_res.text
 
 # Find the title of the manga
-findTitleRegex = re.compile(r'<title>「(\w*)」/')
-title = findTitleRegex.search(master_res)
+title = re.search('<title>「(\w*)」/', master_res)
 title = title.group(1)
 
 # Store comics in ./pixiv_downloads/(title)
@@ -25,7 +25,6 @@ os.makedirs(os.path.join("pixiv_downloads", title), exist_ok=True)
 # Search master list for all the chapters, put their ids into a list.
 findChaptersRegex = re.compile(r'image-item"><a href="/artworks/(\d{8})')
 master_ids = findChaptersRegex.findall(master_res)
-
 master_page_number = 2
 while True:
 
@@ -47,6 +46,7 @@ while True:
     # Go to the next page of pages
     master_page_number += 1
 
+chapter_number = len(master_ids)
 for chapter_id in master_ids:
 
     # Generate the url of the chapter.
@@ -58,6 +58,12 @@ for chapter_id in master_ids:
     res.raise_for_status()
     chapter_res = res.text
 
+    # Find the name of the chapter.
+    chapter_name = re.search(f'"illustId":"{chapter_id}","illustTitle":"([^"]*)"', chapter_res)
+    chapter_name = str(chapter_number) + '. ' + chapter_name.group(1)
+    chapter_number -= 1
+    #print(chapter_name + ':')
+
     # Find the URL of the first image.
     findPageRegex = re.compile(r'"original":"https://\S*/img-original/img/(\d{4}/(\d\d/){5}\d{8}_p)0(.\w*)"')
     page_id = findPageRegex.search(chapter_res)
@@ -66,7 +72,7 @@ for chapter_id in master_ids:
     
     # Download each image in the chapter.
     # Do this by taking the URL of the first chapter
-    # (i.e. https://tc-pximg01.techorus-cdn.com/img-original/img/####/##/##/##/##/##/########_p0.xxx)
+    # (i.e. https://i.pximg.net/img-original/img/####/##/##/##/##/##/########_p0.xxx)
     # and replace the "p0" with "p1", then "p2", etc. until a 404 Error,
     # then move on to the next chapter.
     page_number = 0
@@ -77,12 +83,12 @@ for chapter_id in master_ids:
             # Download the image.
             res = requests.get(page_url)
             res.raise_for_status()
-            #print(f'Downloading image {page_url}')
+            print(f'Downloading image {page_url}')
         except requests.exceptions.HTTPError:
             break
 
-        # Save the image to ./pixiv_downloads/(title).
-        imageFile = open(os.path.join('pixiv_downloads', title, os.path.basename(page_url)), 'wb')
+        # Save the image to ./pixiv_downloads/(chapter name)/(title).
+        imageFile = open(os.path.join('pixiv_downloads', title, chapter_name, os.path.basename(page_url)), 'wb')
         for chunk in res.iter_content(100000):
             imageFile.write(chunk)
         imageFile.close()
