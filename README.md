@@ -1,9 +1,15 @@
-# Pixiv-Download
-Download manga from pixiv.net
+# Manga-Download
+Download manga from pixiv.net and rawdevart.com.
 
 # Usage
+For Pixiv:
 1. Enter the URL of the manga's chapter list (should look like https://www.pixiv.net/user/######/series/#####, with the '#' replaced with digits)
 2. The script will create a folder named 'pixiv-downloads' in whichever directory it's located in
+3. Done.
+
+For Rawdevart:
+1. Enter the URL of the manga's chapter list (should look like https://rawdevart.com/comic/xxxxxx/, with the 'xxxxxx' replaced with the title)
+2. The script will create a folder named 'rawdevart-downloads' in whichever directory it's located in
 3. Done.
 
 # To-Do:
