@@ -20,32 +20,19 @@ title = title.group(1)
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.makedirs(os.path.join("rawdevart_downloads", title), exist_ok=True)
 
-# Function that returns the url of a page, given the title of the manga, the chapter, and page.
-def get_image_url(title, ch, pg):
-    converted_title = ''
-    for c in range(len(title)):
-        if title[c] == ' ':
-            converted_title += '-'
-        else:
-            converted_title += title[c].lower()
-    
-    if len(str(pg)) < 3:
-        pg_ = '0' * (3 - len(str(pg))) + str(pg)
-
-    return f'https://image.rawdevart.com/comic/{converted_title}/chapters/{ch}/{pg_}.jpg'
-
 chapter_number = 1
 # Save the image to ./rawdevart_downloads/(title)/(chapter).
 os.makedirs(os.path.join("rawdevart_downloads", title, f'Chapter {chapter_number}'), exist_ok=True)
 
 while True:   
 
+    # Load the chapter.
     chapter_url = f'{master_url}chapter-{chapter_number}/' 
-
     chapter_res = requests.get(chapter_url)
     chapter_res.raise_for_status()
     chapter_res = chapter_res.text
 
+    # Find the URL for all the pages in the chapter.
     page_list = re.findall('data-src="https://image.rawdevart.com/comic/(\S*)"', chapter_res)
     if page_list == []: break
     
