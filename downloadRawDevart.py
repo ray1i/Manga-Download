@@ -1,9 +1,10 @@
 # !python3
 # downloadRawDevart.py - Downloads manga from RawDevart
 
-import requests, os, bs4, re
+import requests, os, re
 
 master_url = input('Enter the URL of the chapter list:  ')  # Url of chapter list
+page_base = 'https://image.rawdevart.com/comic/'
 
 # Load the master list.
 print(f'Loading page {master_url} ...') 
@@ -19,52 +20,38 @@ title = title.group(1)
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.makedirs(os.path.join("rawdevart_downloads", title), exist_ok=True)
 
-# Function that returns the url of a page, given the title of the manga, the chapter, and page.
-def get_image_url(title, ch, pg):
-    converted_title = ''
-    for c in range(len(title)):
-        if title[c] == ' ':
-            converted_title += '-'
-        else:
-            converted_title += title[c].lower()
-    
-    if len(str(pg)) < 3:
-        pg_ = '0' * (3 - len(str(pg))) + str(pg)
-
-    return f'https://image.rawdevart.com/comic/{converted_title}/chapters/{ch}/{pg_}.jpg'
-
 chapter_number = 1
-success = True
-while True:
-    if not success:
-        break
-    
-    # Save the image to ./rawdevart_downloads/(title)/(chapter).
-    os.makedirs(os.path.join("rawdevart_downloads", title, f'Chapter {chapter_number}'), exist_ok=True)
-    print(f'Downloading Chapter {chapter_number}...')
+# Save the image to ./rawdevart_downloads/(title)/(chapter).
+os.makedirs(os.path.join("rawdevart_downloads", title, f'Chapter {chapter_number}'), exist_ok=True)
 
-    page_number = 1
-    success = False
-    while True:
-        try:
-            # Download the image.
-            image_url = get_image_url(title, chapter_number, page_number)
-            res = requests.get(image_url)
-            res.raise_for_status()
-            #print(f'Downloading image {image_url}')
-            
-            success = True
-        except requests.exceptions.HTTPError:
-            break
+while True:   
+
+    # Load the chapter.
+    chapter_url = f'{master_url}chapter-{chapter_number}/' 
+    chapter_res = requests.get(chapter_url)
+    chapter_res.raise_for_status()
+    chapter_res = chapter_res.text
+
+    # Find the URL for all the pages in the chapter.
+    page_list = re.findall('data-src="https://image.rawdevart.com/comic/(\S*)"', chapter_res)
+    if page_list == []: break
+    
+    for page in page_list:
+        page_url = page_base + page
+
+        # Download the image.
+        res = requests.get(page_url)
+        res.raise_for_status()
+        #print(f'Downloading image {image_url}')
 
         # Save the image to ./rawdevart_downloads/(title)/(chapter)/(pg#).jpg.
-        imageFile = open(os.path.join('rawdevart_downloads', title, f'Chapter {chapter_number}', os.path.basename(image_url)), 'wb')
+        imageFile = open(os.path.join('rawdevart_downloads', title, f'Chapter {chapter_number}', os.path.basename(page_url)), 'wb')
         for chunk in res.iter_content(100000):
             imageFile.write(chunk)
         imageFile.close()
 
-        page_number += 1
-
+    print(f'Chapter {chapter_number} downloaded.')
     chapter_number += 1
+    os.makedirs(os.path.join("rawdevart_downloads", title, f'Chapter {chapter_number}'), exist_ok=True)
 
 print('Done.')
